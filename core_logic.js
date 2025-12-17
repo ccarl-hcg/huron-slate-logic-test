@@ -305,7 +305,7 @@ $(document).ready(function () {
     
     if (!key) return;
 
-    let jsonUrl = `https://slate2.huronconsultinggroup.com/manage/query/run?id=cbf2e91c-09f9-40df-ab7c-f92b2facebbd&cmd=service&output=json&h=a30621a2-c435-435d-8ef6-822d13f18f85&key=${encodeURIComponent(key)}`;
+    let jsonUrl = `https://slate.huronconsultinggroup.com/manage/query/run?id=cbf2e91c-09f9-40df-ab7c-f92b2facebbd&cmd=service&output=json&h=a30621a2-c435-435d-8ef6-822d13f18f85&key=${encodeURIComponent(key)}`;
 
     $.getJSON(jsonUrl, function (data) {
       let currentState = getFormState();
