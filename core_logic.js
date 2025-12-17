@@ -1076,31 +1076,42 @@ $(document).ready(function () {
   calculateCOA(); 
   runAllCalculations(); 
 
-  // -------------------------------
-  // 5. Event Listeners (Optimized)
-  // -------------------------------
+ // -------------------------------
+// 5. Event Listeners (Optimized)
+// -------------------------------
 
-  $(document).on("change input", "input, select", function (e) {
-    const $el = $(this);
-    const $parent = $el.closest("[data-export]");
-    const key = $parent.length ? $parent.attr("data-export") : $el.attr("data-export");
+$(document).on("change input", "input, select, textarea", function (e) {
+  const $el = $(this);
+  const $parent = $el.closest("[data-export]");
+  const key = $parent.length ? $parent.attr("data-export") : $el.attr("data-export");
 
-    // 2. Spam Prevention: If it's the Entry Term, ONLY allow 'change' (not 'input')
-    if (key === "sys:field:prospect_entry_term" && e.type === "input") {
-      return;
-    }
+  if (!key) return;
 
-    // 3. Save Everything
+  // 1. Spam Prevention: If it's the Entry Term, ONLY allow 'change'
+  if (key === "sys:field:prospect_entry_term" && e.type === "input") {
+    return;
+  }
+
+  // 2. Sync DOM to State
+  // This ensures the JS object knows about the new value before the math starts
+  updateAndSaveInputs();
+
+  // 3. Routing Logic
+  if (key === "sys:field:prospect_entry_term" || key === "on_campus") {
+    // These require an external API call for COA
+    calculateCOA(); 
+  } else {
+    // Everything else (GPA, Test Scores, Income) triggers local math
+    runAllCalculations();
+  }
+});
+
+// 4. Force a watcher for programmatic changes
+// If another script or a Slate Rule updates the composite score, 
+// this ensures the math engine catches it.
+$(document).on("change", '[data-export="highest_composite_score"]', function() {
     updateAndSaveInputs();
-
-    // 4. Route to specific calculation
-    // If they change Entry Term OR Housing, we must re-fetch COA (because the key changes)
-    if (key === "sys:field:prospect_entry_term" || key === "on_campus") {
-      calculateCOA(); 
-    } else {
-      runAllCalculations();
-    }
-  });
+    runAllCalculations();
 });
 $(document).ready(function() {
     // --- 1. CONFIGURATION & SELECTORS ---
