@@ -1,151 +1,28 @@
 $(document).ready(function () {
   const FORM_STATE_KEY = "financialAidFormState";
 
-  // -------------------------------
-  // 1. Field Definition Lists
-  // -------------------------------
+// -----------------------------------------------------------------
+  // 1. DYNAMIC FIELD DISCOVERY
+  // -----------------------------------------------------------------
+  let INPUT_FIELDS_LIST = [];
+  let CALCULATED_FIELDS_LIST = [];
 
-  const INPUT_FIELDS_LIST = [
-    "sys:field:prospect_entry_term",
-    "on_campus",
-    "student_graduate_student",
-    "student_current_grade_level",
-    "state_of_residence",
-    "soc",
-    "sys:sex",
-    "student_sai_known",
-    "sai_amount_known",
-    "parent_filed_tax_returns",
-    "student_independence",
-    "student_marital_status",
-    "student_pursuing_a_teaching_certification",
-    "student_children_of_fallen_heroes",
-    "student_iraq_afghanistan_service_grant_indicator",
-    "student_dependents",
-    "student_number_in_family",
-    "student_number_of_family_members_in_college",
-    "parent_filing_status",
-    "parent_adjusted_gross_income",
-    "parent_deductible_payments_to_ira_keogh_other",
-    "parent_untaxed_portions_of_ira_distributions",
-    "parent_untaxed_portions_of_pensions",
-    "parent_tax_exempt_interest_income",
-    "parent_foreign_income_exclusion",
-    "parent_education_credits",
-    "parent_federal_workstudy",
-    "parent_taxable_college_grant_and_scholarship_aid",
-    "parent_annual_child_support_received_for_the_last_complete_calendar_year",
-    "parent_cash_savings_and_checking_accounts",
-    "parent_net_worth_of_current_investments",
-    "parent_net_worth_of_businesses_and_or_investment_farms",
-    "student_filed_tax_returns",
-    "student_filing_status",
-    "student_adjusted_gross_income",
-    "student_deductible_payments_to_ira_keogh_other",
-    "student_tax_exempt_interest_income",
-    "student_untaxed_portions_of_ira_distributions",
-    "student_untaxed_portions_of_pensions",
-    "student_foreign_income_exclusion",
-    "student_taxable_college_grant_and_scholarship_aid",
-    "student_education_credits",
-    "student_federal_workstudy",
-    "student_annual_child_support_received_for_the_last_complete_calendar_year",
-    "student_cash_savings_and_checking_accounts",
-    "student_net_worth_of_current_investments",
-    "student_net_worth_of_businesses_and_or_investment_farms",
-    "gpa",
-    "has_student_taken_test",
-    "highest_sat",
-    "highest_act",
-    "highest_composite_score",
-    "opt_in_to_receive_results",
-    "sys:birthdate",
-  ];
-
-  const CALCULATED_FIELDS_LIST = [
-    "sys:field:coa_person_entry_term",
-    "parent_total_income_additions",
-    "parent_total_income_offsets",
-    "parent_total_income",
-    "parent_us_income_tax_paid_or_foreign_equivalent",
-    "parent_medicare_hospital_insurance_program_tax_rate",
-    "parent_oasdi_tax_rate",
-    "parent_income_protection_allowance",
-    "parent_employment_expense_allowance",
-    "parent_total_allowances_against_income",
-    "parent_adjusted_net_worth_of_businesses_and_or_investment_farms",
-    "parent_net_worth",
-    "parent_asset_protection_allowance",
-    "parent_asset_conversion_rate",
-    "parent_available_income",
-    "parent_contribution_from_assets",
-    "parent_adjusted_available_income",
-    "parent_contribution",
-    "student_total_income_additions",
-    "student_total_income_offsets",
-    "student_us_income_tax_paid_or_foreign_equivalent",
-    "student_medicare_hospital_insurance_program_tax_rate",
-    "student_oasdi_tax_rate",
-    "student_income_protection_allowance",
-    "student_allowance_for_negative_adjusted_available_income",
-    "student_total_income",
-    "student_total_allowances_against_income",
-    "student_assessment_of_student_available_income",
-    "student_contribution_from_income",
-    "student_available_income",
-    "student_net_worth",
-    "student_asset_protection_allowance",
-    "student_discretionary_net_worth",
-    "student_asset_conversion_rate",
-    "student_contribution_from_assets",
-    "maximum_pell_indicator",
-    "parent_contribution_display",
-    "student_available_income_display",
-    "student_contribution_from_income_display",
-    "student_contribution_from_assets_display",
-    "student_adjusted_available_income",
-    "student_total_student_contribution_from_aai",
-    "sai_amount_calculated",
-    "pell_grant_amount",
-    "total_need",
-    "highest_act_translated",
-    "quality_rating",
-    "merit_award",
-    "resident_grant",
-    "add_on_grant_residency",
-    "add_on_grant_sex",
-    "tuition_and_fees",
-    "housing_and_food",
-    "total_direct_billed_charges",
-    "off_campus_living_allowance",
-    "books_and_supplies",
-    "personal_expenses",
-    "transportation",
-    "loan_fees",
-    "total_indirect_education_expenses",
-    "total_estimated_cost_of_attendance",
-    "total_awards",
-    "total_need_based",
-    "total_gift_aid",
-    "subtotal",
-		"gift_aid_target",
-    "net_price",
-    "cost_of_attendance_minus_awards",
-    "pell_grant_flag",
-    "minimum_pell_indicator",
-		"net_price_rounded",
-    "net_price_low",
-		"net_price_high",
-		"total_gift_aid_rounded",
-		"total_gift_aid_low",
-		"total_gift_aid_high",
-		"cost_of_attendance_minus_awards_rounded",
-		"cost_of_attendance_minus_awards_low",
-		"cost_of_attendance_minus_awards_high",
-		"federal_loans",
-		"federal_work_study",
-		"other_aid",
-  ];
+  function discoverFields() {
+    INPUT_FIELDS_LIST = [];
+    CALCULATED_FIELDS_LIST = [];
+    $("[data-export]").each(function () {
+      const key = $(this).attr("data-export");
+      if (!key) return;
+      if (key.endsWith("_calculated")) {
+        CALCULATED_FIELDS_LIST.push(key);
+      } else if (key.endsWith("_input") || key.startsWith("sys:")) {
+        INPUT_FIELDS_LIST.push(key);
+      } else if (["soc", "gpa", "on_campus", "highest_composite_score"].includes(key)) {
+        INPUT_FIELDS_LIST.push(key);
+      }
+    });
+  }
+  discoverFields();
 
   // -------------------------------
   // 2. Storage & DOM Helper Functions
@@ -285,7 +162,7 @@ $(document).ready(function () {
     if (!$termSelect.length) { $termSelect = $(`[id="sys:field:prospect_entry_term"]`); }
     
     const termText = $termSelect.find('option:selected').attr('data-text') || "";
-    const onCampus = (state["on_campus"] || "").trim();
+    const onCampus = (state["on_campus_calculated"] || "").trim();
 
     let result = onCampus; 
     if (termText) {
@@ -305,23 +182,23 @@ $(document).ready(function () {
     
     if (!key) return;
 
-    let jsonUrl = `https://slate.huronconsultinggroup.com/manage/query/run?id=cbf2e91c-09f9-40df-ab7c-f92b2facebbd&cmd=service&output=json&h=a30621a2-c435-435d-8ef6-822d13f18f85&key=${encodeURIComponent(key)}`;
+    let jsonUrl = `https://slate2.huronconsultinggroup.com/manage/query/run?id=cbf2e91c-09f9-40df-ab7c-f92b2facebbd&cmd=service&output=json&h=a30621a2-c435-435d-8ef6-822d13f18f85&key=${encodeURIComponent(key)}`;
 
     $.getJSON(jsonUrl, function (data) {
       let currentState = getFormState();
 
       if (!data || !data.row || !data.row.length) {
         const fieldsToClear = [
-          "tuition_and_fees",
-          "housing_and_food",
-          "books_and_supplies",
-          "personal_expenses",
-          "transportation",
-          "loan_fees",
-          "off_campus_living_allowance",
-          "total_direct_billed_charges",
-          "total_indirect_education_expenses",
-          "total_estimated_cost_of_attendance",
+          "tuition_and_fees_calculated",
+          "housing_and_food_calculated",
+          "books_and_supplies_calculated",
+          "personal_expenses_calculated",
+          "transportation_calculated",
+          "loan_fees_calculated",
+          "off_campus_living_allowance_calculated",
+          "total_direct_billed_charges_calculated",
+          "total_indirect_education_expenses_calculated",
+          "total_estimated_cost_of_attendance_calculated",
         ];
         fieldsToClear.forEach((field) => {
           setCalculatedValue(currentState, field, "");
@@ -333,12 +210,12 @@ $(document).ready(function () {
 
       let row = data.row[0];
 
-      setCalculatedValue(currentState,"tuition_and_fees", row.tuition != null ? row.tuition : "");
-      setCalculatedValue(currentState,"housing_and_food", row.room_and_board != null ? row.room_and_board : "");
-      setCalculatedValue(currentState,"books_and_supplies", row.books != null ? row.books : "");
-      setCalculatedValue(currentState,"personal_expenses", row.miscellaneous != null ? row.miscellaneous : "");
-      setCalculatedValue(currentState,"transportation", row.transportation != null ? row.transportation : "");
-      setCalculatedValue(currentState,"loan_fees", row.federal_stafford_loan_fee != null ? row.federal_stafford_loan_fee : "");
+      setCalculatedValue(currentState,"tuition_and_fees_calculated", row.tuition != null ? row.tuition : "");
+      setCalculatedValue(currentState,"housing_and_food_calculated", row.room_and_board != null ? row.room_and_board : "");
+      setCalculatedValue(currentState,"books_and_supplies_calculated", row.books != null ? row.books : "");
+      setCalculatedValue(currentState,"personal_expenses_calculated", row.miscellaneous != null ? row.miscellaneous : "");
+      setCalculatedValue(currentState,"transportation_calculated", row.transportation != null ? row.transportation : "");
+      setCalculatedValue(currentState,"loan_fees_calculated", row.federal_stafford_loan_fee != null ? row.federal_stafford_loan_fee : "");
 
       let livingStatus = (currentState.on_campus || "").toLowerCase();
       let livingValue = "";
@@ -351,7 +228,7 @@ $(document).ready(function () {
           row.independent_off_campus ||
           "";
       }
-      setCalculatedValue(currentState, "off_campus_living_allowance", livingValue);
+      setCalculatedValue(currentState, "off_campus_living_allowance_calculated", livingValue);
 
       const tuitionVal = parseCurrency(row.tuition);
       const roomVal = parseCurrency(row.room_and_board);
@@ -366,9 +243,9 @@ $(document).ready(function () {
       if (!isOnCampus) totalIndirect += livingVal;
       const totalAll = totalDirect + totalIndirect;
 
-      setCalculatedValue(currentState, "total_direct_billed_charges", formatCurrency(totalDirect));
-      setCalculatedValue(currentState, "total_indirect_education_expenses", formatCurrency(totalIndirect));
-      setCalculatedValue(currentState, "total_estimated_cost_of_attendance", formatCurrency(totalAll));
+      setCalculatedValue(currentState, "total_direct_billed_charges_calculated", formatCurrency(totalDirect));
+      setCalculatedValue(currentState, "total_indirect_education_expenses_calculated", formatCurrency(totalIndirect));
+      setCalculatedValue(currentState, "total_estimated_cost_of_attendance_calculated", formatCurrency(totalAll));
 
       saveFormState(currentState);
       runAllCalculations();
@@ -380,19 +257,19 @@ $(document).ready(function () {
 
   function calculateIncomeProtectionAllowance() {
     const state = getFormState();
-    const saiKnown = parseCurrency(state.sai_amount_known);
+    const saiKnown = parseCurrency(state.sai_amount_known_calculated);
 
     if (saiKnown) {
-      setCalculatedValue(state, "parent_income_protection_allowance", "");
-      setCalculatedValue(state, "student_income_protection_allowance", "");
+      setCalculatedValue(state, "parent_income_protection_allowance_calculated", "");
+      setCalculatedValue(state, "student_income_protection_allowance_calculated", "");
       saveFormState(state);
       return;
     }
 
-    let familySize = parseInt(state.student_number_in_family) || 0;
-    let independenceStatus = state.student_independence;
-    let maritalStatus = state.student_marital_status;
-    let dependentsStatus = state.student_dependents;
+    let familySize = parseInt(state.student_number_in_family_input) || 0;
+    let independenceStatus = state.student_independence_calculated;
+    let maritalStatus = state.student_marital_status_input;
+    let dependentsStatus = state.student_dependents_input;
     let ipa = 0;
 
     if (independenceStatus === "No") {
@@ -402,16 +279,16 @@ $(document).ready(function () {
       else if (familySize === 5) ipa = 50060;
       else if (familySize === 6) ipa = 58560;
       else if (familySize > 6) ipa = 58560 + (familySize - 6) * 6610;
-      setCalculatedValue(state, "parent_income_protection_allowance", ipa);
-      setCalculatedValue(state, "student_income_protection_allowance", "");
+      setCalculatedValue(state, "parent_income_protection_allowance_calculated", ipa);
+      setCalculatedValue(state, "student_income_protection_allowance_calculated", "");
     } else if (independenceStatus === "Yes" && maritalStatus === "Yes") {
       if (familySize === 3) ipa = 54580;
       else if (familySize === 4) ipa = 67400;
       else if (familySize === 5) ipa = 79530;
       else if (familySize === 6) ipa = 93010;
       else if (familySize > 6) ipa = 93010 + (familySize - 6) * 10510;
-      setCalculatedValue(state, "student_income_protection_allowance", ipa);
-      setCalculatedValue(state, "parent_income_protection_allowance", "");
+      setCalculatedValue(state, "student_income_protection_allowance_calculated", ipa);
+      setCalculatedValue(state, "parent_income_protection_allowance_calculated", "");
     } else if (independenceStatus === "Yes" && dependentsStatus === "Yes") {
       if (familySize === 2) ipa = 51960;
       else if (familySize === 3) ipa = 64700;
@@ -419,27 +296,27 @@ $(document).ready(function () {
       else if (familySize === 5) ipa = 94260;
       else if (familySize === 6) ipa = 110230;
       else if (familySize > 6) ipa = 110230 + (familySize - 6) * 12460;
-      setCalculatedValue(state, "student_income_protection_allowance", ipa);
-      setCalculatedValue(state, "parent_income_protection_allowance", "");
+      setCalculatedValue(state, "student_income_protection_allowance_calculated", ipa);
+      setCalculatedValue(state, "parent_income_protection_allowance_calculated", "");
     } else {
-      setCalculatedValue(state, "parent_income_protection_allowance", "");
-      setCalculatedValue(state, "student_income_protection_allowance", "");
+      setCalculatedValue(state, "parent_income_protection_allowance_calculated", "");
+      setCalculatedValue(state, "student_income_protection_allowance_calculated", "");
     }
     saveFormState(state);
   }
 
   function calculatePovertyGuideline() {
     const state = getFormState();
-    const saiKnown = parseCurrency(state.sai_amount_known);
+    const saiKnown = parseCurrency(state.sai_amount_known_input);
 
     if (saiKnown) {
-      setCalculatedValue(state, "poverty_guideline", "");
+      setCalculatedValue(state, "poverty_guideline_calculated", "");
       saveFormState(state);
       return;
     }
 
-    let residenceState = state.state_of_residence;
-    let familySize = parseInt(state.student_number_in_family, 10);
+    let residenceState = state.state_of_residence_input;
+    let familySize = parseInt(state.student_number_in_family_input, 10);
     const guidelines = {
       default: [15650, 21150, 26650, 32150, 37650, 43150, 48650, 54150],
       AK: [19550, 26430, 33310, 40190, 47070, 53950, 60830, 67710],
@@ -458,28 +335,28 @@ $(document).ready(function () {
           : base[7] + (familySize - 8) * extra;
       formattedGuideline = `$${guideline.toLocaleString()}`;
     }
-    setCalculatedValue(state, "poverty_guideline", formattedGuideline);
+    setCalculatedValue(state, "poverty_guideline_calculated", formattedGuideline);
     saveFormState(state);
   }
 
   function calculateMaximumPellIndicator() {
     const state = getFormState();
-    const saiKnown = parseCurrency(state.sai_amount_known);
+    const saiKnown = parseCurrency(state.sai_amount_known_input);
 
     if (saiKnown) {
-      setCalculatedValue(state, "maximum_pell_indicator", "");
+      setCalculatedValue(state, "maximum_pell_indicator_calculated", "");
       saveFormState(state);
       return;
     }
 
-    const dependencyStatus = state.student_independence;
-    const povertyGuideline = parseCurrency(state.poverty_guideline);
+    const dependencyStatus = state.student_independence_calculated;
+    const povertyGuideline = parseCurrency(state.poverty_guideline_calculated);
     let maxPellIndicator = "";
 
     if (dependencyStatus === "No") {
-      const parentFiledTaxes = state.parent_filed_tax_returns;
-      const parentAGI = parseFloat(state.parent_adjusted_gross_income) || 0;
-      const parentFilingStatus = state.parent_filing_status || "";
+      const parentFiledTaxes = state.parent_filed_tax_returns_input;
+      const parentAGI = parseFloat(state.parent_adjusted_gross_income_input) || 0;
+      const parentFilingStatus = state.parent_filing_status_input || "";
       const isSingleParent = [
         "Single",
         "Head of Household",
@@ -500,10 +377,10 @@ $(document).ready(function () {
       )
         maxPellIndicator = 3;
     } else {
-      const studentFiledTaxes = state.student_filed_tax_returns;
-      const studentAGI = parseFloat(state.student_adjusted_gross_income) || 0;
-      const studentFilingStatus = state.student_filing_status || "";
-      const hasDependents = state.student_dependents === "Yes";
+      const studentFiledTaxes = state.student_filed_tax_returns_input;
+      const studentAGI = parseFloat(state.student_adjusted_gross_income_input) || 0;
+      const studentFilingStatus = state.student_filing_status_input || "";
+      const hasDependents = state.student_dependents_input === "Yes";
       const isSingleParent =
         [
           "Single",
@@ -525,13 +402,13 @@ $(document).ready(function () {
       )
         maxPellIndicator = 3;
     }
-    setCalculatedValue(state, "maximum_pell_indicator", maxPellIndicator);
+    setCalculatedValue(state, "maximum_pell_indicator_calculated", maxPellIndicator);
     saveFormState(state);
   }
 
   function calculateSAIandPell() {
     let state = getFormState();
-    const saiKnown = parseCurrency(state.sai_amount_known);
+    const saiKnown = parseCurrency(state.sai_amount_known_input);
     let sai;
     let pellAmount = 0;
     let pellFlag = "No";
@@ -539,13 +416,13 @@ $(document).ready(function () {
     if (saiKnown) {
       sai = saiKnown;
       setCalculatedValue(state, "sai_amount_calculated", sai.toFixed(2));
-      setCalculatedValue(state, "minimum_pell_indicator", "");
-      setCalculatedValue(state, "pell_grant_flag", "No");
-      setCalculatedValue(state, "pell_grant_amount", "$0");
+      setCalculatedValue(state, "minimum_pell_indicator_calculated", "");
+      setCalculatedValue(state, "pell_grant_flag_calculated", "No");
+      setCalculatedValue(state, "pell_grant_amount_calculated", "$0");
     } else {
-      const maxPell = parseInt(state.maximum_pell_indicator) || 0;
+      const maxPell = parseInt(state.maximum_pell_indicator_calculated) || 0;
       const line20 =
-        parseFloat(state.student_total_student_contribution_from_aai) || 0;
+        parseFloat(state.student_total_student_contribution_from_aai_calculated) || 0;
 
       if (maxPell === 1) {
         sai = -1500;
@@ -556,19 +433,19 @@ $(document).ready(function () {
       }
       setCalculatedValue(state, "sai_amount_calculated", sai.toFixed(2));
 
-      const poverty = parseCurrency(state.poverty_guideline);
+      const poverty = parseCurrency(state.poverty_guideline_calculated);
       let minPell = 0;
       if (maxPell === 0 && sai < poverty * 2) {
         minPell = 1;
       }
-      setCalculatedValue(state, "minimum_pell_indicator", minPell);
+      setCalculatedValue(state, "minimum_pell_indicator_calculated", minPell);
 
       const MAX_PELL_AMOUNT = 7395;
       const MIN_PELL_AMOUNT = 740;
 
       pellFlag =
         maxPell > 0 || minPell > 0 || sai < MAX_PELL_AMOUNT ? "Yes" : "No";
-      setCalculatedValue(state, "pell_grant_flag", pellFlag);
+      setCalculatedValue(state, "pell_grant_flag_calculated", pellFlag);
 
       pellAmount = 0;
       if (pellFlag === "Yes") {
@@ -583,7 +460,7 @@ $(document).ready(function () {
       }
       setCalculatedValue(
         state,
-        "pell_grant_amount",
+        "pell_grant_amount_calculated",
         `$${pellAmount.toLocaleString()}`
       );
     }
@@ -596,18 +473,18 @@ $(document).ready(function () {
     const { pellAmount } = calculateSAIandPell();
     let state = getFormState();
 
-    const gpa = parseFloat(state.gpa) || 0;
-    const composite = parseInt(state.highest_composite_score) || 0;
-    const soc = state.soc || "";
+    const gpa = parseFloat(state.gpa_input) || 0;
+    const composite = parseInt(state.highest_composite_score_input) || 0;
+    const soc = state.soc_input || "";
     // *** FIX: Handle "sys:sex" correctly via brackets ***
     // *** FIX: Normalize "Male"/"Female" text to "M"/"F" ***
     const rawSex = (state["sys:sex"] || "").trim();
     const sex = rawSex.charAt(0).toUpperCase(); // "Male" -> "M", "Female" -> "F"
     
-    const residenceState = state.state_of_residence || "";
-    const onCampus = state.on_campus || "";
+    const residenceState = state.state_of_residence_input || "";
+    const onCampus = state.on_campus_input || "";
 
-    const totalCOA = parseCurrency(state.total_estimated_cost_of_attendance);
+    const totalCOA = parseCurrency(state.total_estimated_cost_of_attendance_calculated);
     const sai = parseCurrency(state.sai_amount_calculated);
 
     // Quality rating chart
@@ -663,7 +540,7 @@ $(document).ready(function () {
       }
     })();
     const qualityRating = Math.max(gpaRating, compRating);
-    setCalculatedValue(state, "quality_rating", qualityRating);
+    setCalculatedValue(state, "quality_rating_calculated", qualityRating);
 
     // Merit Award Table
     const meritTable = {
@@ -673,7 +550,7 @@ $(document).ready(function () {
       13: 26500, 12: 25500, 11: 20000, 10: 14500, 1: 0,
     };
     const meritAward = meritTable[qualityRating] || 0;
-    setCalculatedValue(state, "merit_award", formatCurrency(meritAward));
+    setCalculatedValue(state, "merit_award_calculated", formatCurrency(meritAward));
 
     // Add-on Grants
     let addOnResidency = 0,
@@ -686,17 +563,17 @@ $(document).ready(function () {
       if (onCampus === "on-campus_resident") residentGrant = 3500;
       if (soc === "No" && sex === "M") addOnSex = 2000;
     }
-    setCalculatedValue(state, "add_on_grant_residency", addOnResidency ? formatCurrency(addOnResidency) : "");
-    setCalculatedValue(state, "resident_grant", residentGrant ? formatCurrency(residentGrant) : "");
-    setCalculatedValue(state, "add_on_grant_sex", addOnSex ? formatCurrency(addOnSex) : "");
+    setCalculatedValue(state, "add_on_grant_residency_calculated", addOnResidency ? formatCurrency(addOnResidency) : "");
+    setCalculatedValue(state, "resident_grant_calculated", residentGrant ? formatCurrency(residentGrant) : "");
+    setCalculatedValue(state, "add_on_grant_sex_calculated", addOnSex ? formatCurrency(addOnSex) : "");
 
     // Total Awards - Merit + Grants
     const totalnonneedAwards = meritAward + addOnResidency + residentGrant + addOnSex;
-    setCalculatedValue(state, "total_awards", totalnonneedAwards ? formatCurrency(totalnonneedAwards) : "");
+    setCalculatedValue(state, "total_awards_calculated", totalnonneedAwards ? formatCurrency(totalnonneedAwards) : "");
 
     // Need Calculation
     const totalNeed = Math.max(totalCOA - sai, 0);
-    setCalculatedValue(state, "total_need", formatCurrency(totalNeed));
+    setCalculatedValue(state, "total_need_calculated", formatCurrency(totalNeed));
 
     const giftCharts = {
       SOC: [
@@ -1037,23 +914,23 @@ $(document).ready(function () {
 		const net_coaRoundedMax = net_coaRoundedValue + 1500;
 		const otheraid = federalWorkStudy + federalloans;
 
-    setCalculatedValue(state, "total_gift_aid", formatCurrency(totalgiftaidtotal));
-    setCalculatedValue(state, "subtotal", formatCurrency(subtotal));
-    setCalculatedValue(state, "total_need_based", formatCurrency(needbasedinstitutionalaid));
-    setCalculatedValue(state, "net_price", formatCurrency(netprice));
-    setCalculatedValue(state, "cost_of_attendance_minus_awards", formatCurrency(net_coa));
-		setCalculatedValue(state, "net_price_rounded", formatCurrency(netPriceRoundedValue));
-		setCalculatedValue(state, "net_price_low", formatCurrency(netPriceRoundedMin));
-		setCalculatedValue(state, "net_price_high", formatCurrency(netPriceRoundedMax));
-	  setCalculatedValue(state, "total_gift_aid_rounded", formatCurrency(totalgiftaidtotalRoundedValue));
-		setCalculatedValue(state, "total_gift_aid_low", formatCurrency(totalgiftaidtotalRoundedMin));
-		setCalculatedValue(state, "total_gift_aid_high", formatCurrency(totalgiftaidtotalRoundedMax));
-			  setCalculatedValue(state, "cost_of_attendance_minus_awards_rounded", formatCurrency(net_coaRoundedValue));
-		setCalculatedValue(state, "cost_of_attendance_minus_awards_low", formatCurrency(net_coaRoundedMin));
-		setCalculatedValue(state, "cost_of_attendance_minus_awards_high", formatCurrency(net_coaRoundedMax));
-		setCalculatedValue(state, "federal_loans", formatCurrency(federalloans));
-		setCalculatedValue(state, "federal_work_study", formatCurrency(federalWorkStudy));
-		setCalculatedValue(state, "other_aid", formatCurrency(otheraid));
+    setCalculatedValue(state, "total_gift_aid_calculated", formatCurrency(totalgiftaidtotal));
+    setCalculatedValue(state, "subtotal_calculated", formatCurrency(subtotal));
+    setCalculatedValue(state, "total_need_based_calculated", formatCurrency(needbasedinstitutionalaid));
+    setCalculatedValue(state, "net_price_calculated", formatCurrency(netprice));
+    setCalculatedValue(state, "cost_of_attendance_minus_awards_calculated", formatCurrency(net_coa));
+		setCalculatedValue(state, "net_price_rounded_calculated", formatCurrency(netPriceRoundedValue));
+		setCalculatedValue(state, "net_price_low_calculated", formatCurrency(netPriceRoundedMin));
+		setCalculatedValue(state, "net_price_high_calculated", formatCurrency(netPriceRoundedMax));
+	  setCalculatedValue(state, "total_gift_aid_rounded_calculated", formatCurrency(totalgiftaidtotalRoundedValue));
+		setCalculatedValue(state, "total_gift_aid_low_calculated", formatCurrency(totalgiftaidtotalRoundedMin));
+		setCalculatedValue(state, "total_gift_aid_high_calculated", formatCurrency(totalgiftaidtotalRoundedMax));
+			  setCalculatedValue(state, "cost_of_attendance_minus_awards_rounded_calculated", formatCurrency(net_coaRoundedValue));
+		setCalculatedValue(state, "cost_of_attendance_minus_awards_low_calculated", formatCurrency(net_coaRoundedMin));
+		setCalculatedValue(state, "cost_of_attendance_minus_awards_high_calculated", formatCurrency(net_coaRoundedMax));
+		setCalculatedValue(state, "federal_loans_calculated", formatCurrency(federalloans));
+		setCalculatedValue(state, "federal_work_study_calculated", formatCurrency(federalWorkStudy));
+		setCalculatedValue(state, "other_aid_calculated", formatCurrency(otheraid));
 		
 
     saveFormState(state);
@@ -1076,42 +953,31 @@ $(document).ready(function () {
   calculateCOA(); 
   runAllCalculations(); 
 
- // -------------------------------
-// 5. Event Listeners (Optimized)
-// -------------------------------
+  // -------------------------------
+  // 5. Event Listeners (Optimized)
+  // -------------------------------
 
-$(document).on("change input", "input, select, textarea", function (e) {
-  const $el = $(this);
-  const $parent = $el.closest("[data-export]");
-  const key = $parent.length ? $parent.attr("data-export") : $el.attr("data-export");
+  $(document).on("change input", "input, select", function (e) {
+    const $el = $(this);
+    const $parent = $el.closest("[data-export]");
+    const key = $parent.length ? $parent.attr("data-export") : $el.attr("data-export");
 
-  if (!key) return;
+    // 2. Spam Prevention: If it's the Entry Term, ONLY allow 'change' (not 'input')
+    if (key === "sys:field:prospect_entry_term" && e.type === "input") {
+      return;
+    }
 
-  // 1. Spam Prevention: If it's the Entry Term, ONLY allow 'change'
-  if (key === "sys:field:prospect_entry_term" && e.type === "input") {
-    return;
-  }
-
-  // 2. Sync DOM to State
-  // This ensures the JS object knows about the new value before the math starts
-  updateAndSaveInputs();
-
-  // 3. Routing Logic
-  if (key === "sys:field:prospect_entry_term" || key === "on_campus") {
-    // These require an external API call for COA
-    calculateCOA(); 
-  } else {
-    // Everything else (GPA, Test Scores, Income) triggers local math
-    runAllCalculations();
-  }
-});
-
-// 4. Force a watcher for programmatic changes
-// If another script or a Slate Rule updates the composite score, 
-// this ensures the math engine catches it.
-$(document).on("change", '[data-export="highest_composite_score"]', function() {
+    // 3. Save Everything
     updateAndSaveInputs();
-    runAllCalculations();
+
+    // 4. Route to specific calculation
+    // If they change Entry Term OR Housing, we must re-fetch COA (because the key changes)
+    if (key === "sys:field:prospect_entry_term" || key === "on_campus_input") {
+      calculateCOA(); 
+    } else {
+      runAllCalculations();
+    }
+  });
 });
 $(document).ready(function() {
     // --- 1. CONFIGURATION & SELECTORS ---
@@ -1125,7 +991,7 @@ $(document).ready(function() {
     const $backButton = $('button.form_action_back'); 
     
     // SAI removal selectors
-    const $yesRadio = $('#form_59ccf76e-e28b-4a8e-84fb-2da5c6eb81ea_1'); 
+    const $yesRadio = $('div[data-export="student_sai_known"] input[data-text="Yes"]'); 
     const pagesToRemoveSelector = '[data-export="sai_not_known"], [data-export="sai_not_known_dependent"]';
 
     // --- 2. INITIAL CLEANUP (CRITICAL STEP) ---
@@ -1223,4 +1089,3 @@ $(document).ready(function() {
     // D. Optional: Run the check on load in case the form is pre-filled
     // $yesRadio.trigger('change');
 });
-	});
