@@ -1223,3 +1223,4 @@ $(document).ready(function() {
     // D. Optional: Run the check on load in case the form is pre-filled
     // $yesRadio.trigger('change');
 });
+	});
